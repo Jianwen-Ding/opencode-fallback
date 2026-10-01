@@ -7,6 +7,8 @@
 
 type AgentRecord = Record<string, unknown>
 
+import { sortModelsByPreference } from "./model-order"
+
 const SESSION_ID_NOISE_WORDS = new Set(["ses", "work", "task", "session"])
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -60,8 +62,13 @@ export function getFallbackModelsForSession(
 	sessionID: string,
 	eventAgent: string | undefined,
 	agents: AgentRecord | undefined,
-	globalFallbackModels?: string[]
+	globalFallbackModels?: string[],
+	autoDiscoveredModels?: string[],
+	autoOrder = true
 ): string[] {
+	const order = (models: string[]): string[] =>
+		autoOrder ? sortModelsByPreference(models) : [...models]
+
 	const resolvedAgent = resolveAgentForSession(sessionID, eventAgent)
 
 	// Tier 1: Per-agent fallback_models
@@ -86,15 +93,22 @@ export function getFallbackModelsForSession(
 					models.unshift(primaryModel)
 				}
 			}
-			return models
+			return order(models)
 		}
 	}
 
 	// Tier 2: Global fallback_models from plugin config
 	if (globalFallbackModels && globalFallbackModels.length > 0) {
-		return globalFallbackModels
+		return order(globalFallbackModels)
 	}
 
-	// Tier 3: No fallback
+	// Tier 3: Auto-discovered models scanned from the OpenCode config
+	// (zero-config fallback — already preference-ordered at scan time,
+	// re-ordered here only if the caller mutated the list)
+	if (autoDiscoveredModels && autoDiscoveredModels.length > 0) {
+		return order(autoDiscoveredModels)
+	}
+
+	// Tier 4: No fallback
 	return []
 }

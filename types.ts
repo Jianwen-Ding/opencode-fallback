@@ -14,6 +14,18 @@ export interface FallbackPluginConfig {
 	timeout_seconds?: number
 	notify_on_fallback?: boolean
 	fallback_models?: string | string[]
+	/** Automatically order fallback chains by preference tier
+	 *  (Claude → GPT → Muse → other American → GLM → MiMo → DeepSeek → rest).
+	 *  Models within the same tier keep their configured order.
+	 *  Set to false to keep configured order untouched.
+	 *  Default: true */
+	auto_order?: boolean
+	/** When no per-agent or global fallback_models are configured,
+	 *  automatically build a fallback chain from the models OpenCode
+	 *  knows about (scanned from the `config` hook payload).
+	 *  Set to false to disable zero-config fallback.
+	 *  Default: true */
+	auto_discover?: boolean
 }
 
 export interface FallbackState {
@@ -164,6 +176,12 @@ export interface HookDeps {
 	config: Required<FallbackPluginConfig>
 	agentConfigs: Record<string, unknown> | undefined
 	globalFallbackModels: string[]
+	/** Models scanned from the OpenCode `config` hook payload
+	 *  (provider catalog + agent models), preference-ordered.
+	 *  Used as the fallback chain when neither per-agent nor
+	 *  global fallback_models are configured.
+	 *  Optional so older hand-built HookDeps fixtures keep working. */
+	autoDiscoveredModels?: string[]
 	sessionStates: Map<string, FallbackState>
 	sessionLastAccess: Map<string, number>
 	sessionRetryInFlight: Set<string>

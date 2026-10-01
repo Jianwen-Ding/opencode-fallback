@@ -214,7 +214,9 @@ export function createEventHandler(deps: HookDeps, helpers: AutoRetryHelpers) {
 							sessionID,
 							resolvedAgent,
 							deps.agentConfigs,
-							deps.globalFallbackModels
+							deps.globalFallbackModels,
+							config.auto_discover ? deps.autoDiscoveredModels : undefined,
+							config.auto_order
 						)
 						if (fallbackModels.length === 0) {
 							logInfo("session.idle silent failure — no fallback models configured", {
@@ -294,7 +296,9 @@ export function createEventHandler(deps: HookDeps, helpers: AutoRetryHelpers) {
 				sessionID,
 				resolvedAgent,
 				deps.agentConfigs,
-				deps.globalFallbackModels
+				deps.globalFallbackModels,
+				config.auto_discover ? deps.autoDiscoveredModels : undefined,
+				config.auto_order
 			)
 
 			logInfo("Provider retry detected", {
@@ -575,7 +579,9 @@ export function createEventHandler(deps: HookDeps, helpers: AutoRetryHelpers) {
 				sessionID,
 				resolvedAgent,
 				deps.agentConfigs,
-				deps.globalFallbackModels
+				deps.globalFallbackModels,
+				config.auto_discover ? deps.autoDiscoveredModels : undefined,
+				config.auto_order
 			)
 
 			if (fallbackModels.length === 0) {

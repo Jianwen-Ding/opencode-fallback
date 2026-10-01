@@ -172,7 +172,7 @@ describe("config-reader", () => {
 		})
 
 		describe("#when fallback_models already contains the primary model", () => {
-			test("#then does not duplicate the primary model", () => {
+			test("#then does not duplicate the primary model (auto-ordered: claude first)", () => {
 				const agents = {
 					opus: {
 						model: "anthropic/claude-opus-4-6",
@@ -184,6 +184,26 @@ describe("config-reader", () => {
 					"ses_123",
 					"opus",
 					agents
+				)
+
+				expect(result).toEqual(["anthropic/claude-opus-4-6", "google/model-a"])
+			})
+
+			test("#then keeps configured order when autoOrder is false", () => {
+				const agents = {
+					opus: {
+						model: "anthropic/claude-opus-4-6",
+						fallback_models: ["google/model-a", "anthropic/claude-opus-4-6"],
+					},
+				}
+
+				const result = getFallbackModelsForSession(
+					"ses_123",
+					"opus",
+					agents,
+					undefined,
+					undefined,
+					false
 				)
 
 				expect(result).toEqual(["google/model-a", "anthropic/claude-opus-4-6"])

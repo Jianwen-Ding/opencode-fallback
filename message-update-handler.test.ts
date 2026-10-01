@@ -825,10 +825,13 @@ describe("message-update-handler", () => {
 				const sessionID = "ses_resync_legit"
 
 				// State: thinks current model is gemini-flash, but actual error is from k2p5
-				// k2p5 is NOT in failedModels — this is a genuine state desync
+				// k2p5 is NOT in failedModels — this is a genuine state desync.
+				// fallbackIndex 0: after resyncing currentModel to k2p5, the
+				// ordered chain [claude-haiku, gemini-flash, k2p5] still has a
+				// candidate (gemini-flash) so fallback planning succeeds.
 				const state = createFallbackState("kimi-for-coding/k2p5")
 				state.currentModel = "google/gemini-flash"
-				state.fallbackIndex = 1
+				state.fallbackIndex = 0
 				state.attemptCount = 1
 				// k2p5 NOT in failedModels
 				deps.sessionStates.set(sessionID, state)

@@ -11,6 +11,7 @@ import { createEventHandler } from "./event-handler"
 import { createMessageUpdateHandler } from "./message-update-handler"
 import { createChatMessageHandler } from "./chat-message-handler"
 import { normalizeFallbackModelsField } from "./config-reader"
+import { collectAvailableModels, sortModelsByPreference } from "./model-order"
 import { isEmptyTaskResult, extractChildSessionID, waitForChildFallbackResult } from "./subagent-result-sync"
 import { readFileSync, existsSync } from "fs"
 import { join } from "path"
@@ -85,6 +86,14 @@ export default async function OpenCodeFallbackPlugin(
 				configOverrides?.notify_on_fallback ??
 				fileConfig?.notify_on_fallback ??
 				DEFAULT_CONFIG.notify_on_fallback,
+			auto_order:
+				configOverrides?.auto_order ??
+				fileConfig?.auto_order ??
+				DEFAULT_CONFIG.auto_order,
+			auto_discover:
+				configOverrides?.auto_discover ??
+				fileConfig?.auto_discover ??
+				DEFAULT_CONFIG.auto_discover,
 			fallback_models:
 				configOverrides?.fallback_models ??
 				fileConfig?.fallback_models ??
@@ -103,6 +112,7 @@ export default async function OpenCodeFallbackPlugin(
 			return agentConfigs
 		},
 		globalFallbackModels,
+		autoDiscoveredModels: [] as string[],
 		sessionStates: new Map(),
 		sessionLastAccess: new Map(),
 		sessionRetryInFlight: new Set(),
@@ -144,8 +154,21 @@ export default async function OpenCodeFallbackPlugin(
 			} else {
 				agentConfigs = undefined
 			}
+
+			// Scan every model OpenCode knows about (provider catalog +
+			// agent models) and preference-order it once, so sessions with
+			// no explicit fallback_models still get a sensible chain.
+			try {
+				const scanned = collectAvailableModels(opencodeConfig)
+				const ordered = sortModelsByPreference(scanned)
+				const discovered = (deps.autoDiscoveredModels ??= [])
+				discovered.length = 0
+				discovered.push(...ordered)
+			} catch (err) {
+				logInfo("Failed to scan available models for auto-discovery", err as Record<string, unknown>)
+			}
 			
-			logInfo(`Plugin initialized with ${agentConfigs ? Object.keys(agentConfigs).length : 0} agents`)
+			logInfo(`Plugin initialized with ${agentConfigs ? Object.keys(agentConfigs).length : 0} agents (${deps.autoDiscoveredModels?.length ?? 0} auto-discovered model(s))`)
 		},
 
 		event: async ({

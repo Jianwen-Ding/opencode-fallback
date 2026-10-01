@@ -118,7 +118,22 @@ All fields are optional — omit any you want to keep at the default.
   // fallback_models in opencode.json.
   // Accepts a string (single model) or an array of strings.
   // Default: []
-  "fallback_models": []
+  "fallback_models": [],
+
+  // Automatically order every fallback chain by preference tier:
+  // Claude → GPT → Muse → other American models → GLM → MiMo → DeepSeek → rest.
+  // Models within the same tier keep their configured order.
+  // Set to false to keep your configured order untouched.
+  // Default: true
+  "auto_order": true,
+
+  // Zero-config fallback: when no per-agent or global fallback_models are
+  // configured, build a chain automatically from the models OpenCode knows
+  // about (provider catalog + agent models), already in the tier order above.
+  // Explicit configuration always wins over auto-discovery.
+  // Set to false to disable.
+  // Default: true
+  "auto_discover": true
 }
 ```
 
@@ -128,14 +143,29 @@ All fields are optional — omit any you want to keep at the default.
 
 1. **Per-agent** — inside the agent block in `opencode.json` (highest priority)
 2. **Global** — in the plugin config file above (used as fallback when no per-agent list is set)
+3. **Auto-discovered** — scanned from your OpenCode config (provider catalog + agent models) when neither of the above is set — no configuration needed
 
-Per-agent always wins. If an agent defines its own list, the global list is ignored entirely for that agent.
+Per-agent always wins. If an agent defines its own list, the global list is ignored entirely for that agent. If neither is set, the auto-discovered chain is used.
 
 ```
 opencode.json agent.fallback_models   ← takes priority
 opencode-fallback.jsonc fallback_models  ← used if no per-agent list
+auto-discovered models (scanned + ordered) ← used if nothing configured
 (nothing)                                ← error passes through to user
 ```
+
+Every chain is automatically ordered by preference tier unless `"auto_order": false` is set:
+
+1. Claude products
+2. GPT products
+3. Muse
+4. Other American models (Gemini/Google, Grok/xAI, Llama/Meta, Copilot/Microsoft, …)
+5. GLM (Zhipu)
+6. MiMo (Xiaomi)
+7. DeepSeek
+8. Anything else (kept in original order — order doesn't matter here)
+
+Models with `"disabled": true`, or hidden via provider `blacklist` / excluded by `whitelist`, are never scanned into the auto-discovered chain.
 
 ---
 

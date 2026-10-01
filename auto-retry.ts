@@ -153,7 +153,9 @@ export function createAutoRetryHelpers(deps: HookDeps) {
 				sessionID,
 				resolvedAgent,
 				deps.agentConfigs,
-				deps.globalFallbackModels
+				deps.globalFallbackModels,
+				config.auto_discover ? deps.autoDiscoveredModels : undefined,
+				config.auto_order
 			)
 			if (fallbackModels.length === 0) return
 

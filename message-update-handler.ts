@@ -206,7 +206,9 @@ export function createMessageUpdateHandler(deps: HookDeps, helpers: AutoRetryHel
 								sessionID,
 								resolvedAgent,
 								deps.agentConfigs,
-								deps.globalFallbackModels
+								deps.globalFallbackModels,
+								config.auto_discover ? deps.autoDiscoveredModels : undefined,
+								config.auto_order
 							)
 							if (fallbackModels.length > 0) {
 								helpers.scheduleSessionFallbackTimeout(sessionID, resolvedAgent)
@@ -514,7 +516,9 @@ export function createMessageUpdateHandler(deps: HookDeps, helpers: AutoRetryHel
 					sessionID,
 					resolvedAgent,
 					deps.agentConfigs,
-					deps.globalFallbackModels
+					deps.globalFallbackModels,
+					config.auto_discover ? deps.autoDiscoveredModels : undefined,
+					config.auto_order
 				)
 
 				if (fallbackModels.length === 0) {
