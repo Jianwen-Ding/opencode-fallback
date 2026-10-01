@@ -10,7 +10,8 @@ Automatic model fallback plugin for [OpenCode](https://github.com/sst/opencode).
 - **TTFT timeout** — aborts models that produce no tokens within a configurable window; models that are actively streaming are never interrupted
 - **Cooldown & auto-recovery** — failed models enter cooldown and the plugin automatically switches back to the primary once it recovers
 - **Custom retryable patterns** — extend the built-in error matching with your own regex patterns
-- **Toast notifications** — optional UI feedback when models are switched
+- **Toast notifications** — optional UI feedback when models are switched,
+  plus a small ready/armed message naming what the next model will be
 
 ---
 
@@ -113,6 +114,13 @@ All fields are optional — omit any you want to keep at the default.
   // or exhausts the fallback chain.
   // Default: true
   "notify_on_fallback": true,
+
+  // Show a small toast when the plugin is ready (startup) and when a
+  // session is armed, naming what the next model will be on failure.
+  // "Fallback Ready" fires once config loads; "Fallback Armed" fires once
+  // per session when the session's chain is resolved.
+  // Default: true
+  "notify_on_ready": true,
 
   // Global fallback chain. Used by agents that don't define their own
   // fallback_models in opencode.json.

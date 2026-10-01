@@ -1,7 +1,7 @@
 export {}
 
 await Bun.build({
-	entrypoints: ["./index.ts"],
+	entrypoints: ["./index.ts", "./auto-fallback.ts"],
 	outdir: "./dist",
 	target: "bun",
 	format: "esm",
