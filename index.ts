@@ -1,4 +1,8 @@
-// Single-file source of truth: all logic lives in ./auto-fallback.ts.
-// This module is a thin re-export shim for backwards compatibility.
-export * from "./auto-fallback"
-export { default } from "./auto-fallback"
+// OpenCode plugin entrypoint — must ONLY export plugin function(s).
+// Do NOT use `export *` here: opencode iterates over every export value
+// and throws "Plugin export is not a function" on the first non-function
+// export (see getLegacyPlugins in opencode's plugin loader).
+// All helpers/tests import directly from "./auto-fallback".
+import OpenCodeFallbackPlugin from "./auto-fallback"
+
+export default OpenCodeFallbackPlugin
